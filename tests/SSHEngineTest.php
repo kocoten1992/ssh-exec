@@ -57,8 +57,7 @@ class SSHEngineTest extends TestCase
 
         // create podman container
         exec(
-            'podman run --rm -d --name '.$container_name.' -p 22 '.
-            '-v '.__DIR__.':/test ssh-exec',
+            'podman run --rm -d --name '.$container_name.' -p 22 ssh-exec',
             $output,
             $exit_code
         );
