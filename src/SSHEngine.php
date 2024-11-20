@@ -5,18 +5,17 @@ namespace K92\SshExec;
 use Exception;
 
 class SSHEngine {
+    private array $ssh_flow = [];
+    private array $full_commands = [];
+    private array $output = [];
+
     public readonly bool $computed;
     public readonly int $hbsl_count;
     public readonly int $lbsl_count;
-    public readonly string $full_command;
     public readonly string $hbsl; // high backslash
     public readonly string $lbsl; // low backslash
     public readonly string $ssh_conn;
     public readonly string $ssh_level;
-
-    public readonly array $output;
-
-    private array $ssh_flow = [];
 
     public function from(array $endpoint)
     {
@@ -49,15 +48,15 @@ class SSHEngine {
     {
         $this->compute();
 
-        $this->full_command = $this->ssh_conn.$command;
+        $full_command = $this->ssh_conn.$command;
 
-        exec($this->full_command, $output, $exit_code);
+        $this->full_commands[] = $full_command;
+
+        exec($full_command, $this->output, $exit_code);
 
         if ($exit_code !== 0) {
             throw new Exception('K92/SSHEngine: ssh exec fail', 3);
         }
-
-        $this->output = $output;
 
         return $this;
     }
@@ -94,6 +93,8 @@ class SSHEngine {
         }
 
         $this->ssh_conn = $ssh_conn;
+
+        $this->computed = true;
     }
 
     /**
@@ -131,5 +132,15 @@ class SSHEngine {
         if (! array_key_exists('ssh_debug', $endpoint)) {
             $endpoint['ssh_debug'] = false;
         }
+    }
+
+    public function getFullCommands()
+    {
+        return $this->full_commands;
+    }
+
+    public function getOutput()
+    {
+        return $this->output;
     }
 }

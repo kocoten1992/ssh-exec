@@ -18,5 +18,21 @@ $se = (new SSHEngine)
         'ssh_socket_path' => null, // multiplexing
         'ssh_username' => 'root',
     ])
-    ->exec('ls -1 /opt/');
+    ->exec('ls -1 /opt/')
+    ->exec('touch /opt/newfile');
 ```
+
+## Installation
+
+```bash
+composer require k92/ssh-exec
+```
+
+## Testing
+
+```php
+./vendor/bin/phpunit tests
+```
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)

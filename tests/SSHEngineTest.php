@@ -120,9 +120,10 @@ class SSHEngineTest extends TestCase
                 'ssh_socket_path' => null,
                 'ssh_username' => 'root',
             ])
-            ->exec('ls -1 /opt/');
+            ->exec('ls -1 /opt/')
+            ->exec('touch /opt/newfile');
 
-        $this->assertEquals($se->output[0], $filename);
+        $this->assertEquals($se->getOutput()[0], $filename);
 
 
         // clean up
@@ -130,7 +131,15 @@ class SSHEngineTest extends TestCase
 
         $this->assertEquals(0, $exit_code);
 
-        exec('podman container exists '.$container_name, $output, $exit_code);
+        while (true) {
+            exec('podman container exists '.$container_name, $output, $exit_code);
+
+            if ($exit_code === 0) {
+                continue;
+            }
+
+            break;
+        }
 
         $this->assertNotEquals(0, $exit_code);
 
