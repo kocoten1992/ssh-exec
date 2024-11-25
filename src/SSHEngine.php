@@ -143,4 +143,9 @@ class SSHEngine {
     {
         return $this->output;
     }
+
+    public function clearOutput()
+    {
+        $this->output = [];
+    }
 }
