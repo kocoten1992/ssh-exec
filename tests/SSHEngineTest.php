@@ -117,7 +117,6 @@ class SSHEngineTest extends TestCase
                 'ssh_address' => 'localhost',
                 'ssh_debug' => (bool) rand(0, 1),
                 'ssh_port' => $ssh_port,
-                'ssh_socket_path' => null,
                 'ssh_username' => 'root',
             ])
             ->exec('ls -1 /opt/')

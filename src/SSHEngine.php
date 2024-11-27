@@ -79,7 +79,11 @@ class SSHEngine {
 
         for ($i = 1; $i < count($this->ssh_flow); $i++) {
             $ssh_conn .= "ssh ".
-                ($this->ssh_flow[$i]['ssh_socket_path'] ? "-S ".$this->ssh_flow[$i]['ssh_socket_path']." " : "").
+                (
+                    $this->ssh_flow[$i - 1]['ssh_socket_path'] ?
+                    "-o ControlMaster=auto -S ".$this->ssh_flow[$i - 1]['ssh_socket_path']." " :
+                    ""
+                ).
                 "-p".$this->ssh_flow[$i]['ssh_port']." -oBatchMode=true ".
                 ($this->ssh_flow[$i]['ssh_debug'] ? "" : "-q -oLogLevel=QUIET ").
                 "-oConnectTimeout=10 -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no ";
@@ -126,7 +130,7 @@ class SSHEngine {
         }
 
         if (! array_key_exists('ssh_socket_path', $endpoint)) {
-            $endpoint['ssh_socket_path'] = null;
+            $endpoint['ssh_socket_path'] = '~/.ssh/'.bin2hex(random_bytes(32));
         }
 
         if (! array_key_exists('ssh_debug', $endpoint)) {
