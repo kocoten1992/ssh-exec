@@ -119,15 +119,20 @@ class SSHEngineTest extends TestCase
                 'ssh_port' => $ssh_port,
                 'ssh_username' => 'root',
             ])
+            ->exec([
+                'ls -1 /opt/',
+                'ls -1 /opt/',
+                'ls -1 /opt/',
+            ])
             ->exec('ls -1 /opt/')
             ->exec('touch /opt/newfile');
 
         $this->assertEquals($se->getOutput()[0], $filename);
-        $this->assertEquals(1, count($se->getOutput()));
+        $this->assertEquals(4, count($se->getOutput()));
 
         $se->exec('ls -1 /opt/');
 
-        $this->assertEquals(3, count($se->getOutput()));
+        $this->assertEquals(6, count($se->getOutput()));
 
         $se->clearOutput();
 

@@ -17,6 +17,8 @@ class SSHEngine {
     public readonly string $ssh_conn;
     public readonly string $ssh_level;
 
+    public readonly string $css_command; // clear ssh socket command
+
     public function from(array $endpoint)
     {
         $this->curateEndpoint($endpoint);
@@ -44,19 +46,31 @@ class SSHEngine {
         return $this;
     }
 
-    public function exec(string $command, array $options = [])
+    public function exec(array|string $commands, array $options = [])
     {
         $this->compute();
 
-        $full_command = $this->ssh_conn.$command;
-
-        $this->full_commands[] = $full_command;
-
-        exec($full_command, $this->output, $exit_code);
-
-        if ($exit_code !== 0) {
-            throw new Exception('K92/SSHEngine: ssh exec fail', 3);
+        if (is_string($commands)) {
+            $commands = [$commands];
         }
+
+        // prepare ssh socket paths
+        exec($this->ssh_conn.'nohup tail -F /dev/null &');
+
+        foreach ($commands as $command) {
+            $full_command = $this->ssh_conn.$command;
+
+            $this->full_commands[] = $full_command;
+
+            exec($full_command, $this->output, $exit_code);
+
+            if ($exit_code !== 0) {
+                throw new Exception('K92/SSHEngine: ssh exec fail', 3);
+            }
+        }
+
+        // clear ssh socket paths
+        exec($this->css_command);
 
         return $this;
     }
@@ -91,6 +105,11 @@ class SSHEngine {
             // ssh_privatekey_path could be empty
             if ($this->ssh_flow[$i - 1]['ssh_privatekey_path'] !== null) {
                 $ssh_conn .= "-i".$this->ssh_flow[$i - 1]['ssh_privatekey_path']." ";
+            }
+
+            if (! isset($this->css_command)) {
+                $this->css_command = $ssh_conn."-O exit ".
+                    "{$this->ssh_flow[$i]['ssh_username']}@{$this->ssh_flow[$i]['ssh_address']}";
             }
 
             $ssh_conn .= "-tt {$this->ssh_flow[$i]['ssh_username']}@{$this->ssh_flow[$i]['ssh_address']} ";
@@ -130,7 +149,7 @@ class SSHEngine {
         }
 
         if (! array_key_exists('ssh_socket_path', $endpoint)) {
-            $endpoint['ssh_socket_path'] = '~/.ssh/'.bin2hex(random_bytes(32));
+            $endpoint['ssh_socket_path'] = '/dev/shm/'.bin2hex(random_bytes(32));
         }
 
         if (! array_key_exists('ssh_debug', $endpoint)) {
