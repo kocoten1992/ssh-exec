@@ -127,6 +127,7 @@ class SSHEngineTest extends TestCase
             ->exec('ls -1 /opt/')
             ->exec('touch /opt/newfile');
 
+        $this->assertEquals($se->getLastLine(), $filename);
         $this->assertEquals($se->getOutput()[0], $filename);
         $this->assertEquals(4, count($se->getOutput()));
 

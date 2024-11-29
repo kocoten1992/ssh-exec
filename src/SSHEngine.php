@@ -175,6 +175,11 @@ class SSHEngine {
         return $this->full_commands;
     }
 
+    public function getLastLine()
+    {
+        return $this->output[count($this->output) - 1];
+    }
+
     public function getOutput()
     {
         return $this->output;
