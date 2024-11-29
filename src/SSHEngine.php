@@ -54,9 +54,6 @@ class SSHEngine {
             $commands = [$commands];
         }
 
-        // prepare ssh socket paths
-        exec($this->ssh_conn.'nohup tail -F /dev/null &');
-
         foreach ($commands as $command) {
             $full_command = $this->ssh_conn.$command;
 
@@ -68,9 +65,6 @@ class SSHEngine {
                 throw new Exception('K92/SSHEngine: ssh exec fail', 3);
             }
         }
-
-        // clear ssh socket paths
-        exec($this->css_command);
 
         return $this;
     }
@@ -116,6 +110,9 @@ class SSHEngine {
         }
 
         $this->ssh_conn = $ssh_conn;
+
+        // this connection auto removed when object out of scope
+        exec($this->ssh_conn.'nohup tail -F /dev/null &');
 
         $this->computed = true;
     }

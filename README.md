@@ -15,10 +15,10 @@ $se = (new SSHEngine)
         'ssh_address' => 'localhost',
         'ssh_debug' => true,
         'ssh_port' => 22,
-        'ssh_socket_path' => null, // manual multiplexing
+        'ssh_socket_path' => null, // manual disable multiplexing
         'ssh_username' => 'root',
     ])
-    ->exec([ // exec array will use auto multiplexing
+    ->exec([
         'ls -1 /opt/',
         'touch /opt/newfile'
     ])
