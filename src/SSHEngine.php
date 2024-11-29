@@ -21,6 +21,14 @@ class SSHEngine {
 
     public function from(array $endpoint)
     {
+        if (count($this->ssh_flow) > 0) {
+            throw new Exception('K92/SSHEngine: from already called', 4);
+        }
+
+        if (isset($this->computed)) {
+            throw new Exception('K92/SSHEngine: ssh flow computed', 5);
+        }
+
         $this->curateEndpoint($endpoint);
 
         $this->ssh_flow[] = $endpoint;
@@ -30,6 +38,10 @@ class SSHEngine {
 
     public function jump(array $endpoint)
     {
+        if (isset($this->computed)) {
+            throw new Exception('K92/SSHEngine: ssh flow computed', 6);
+        }
+
         $this->curateEndpoint($endpoint);
 
         $this->ssh_flow[] = $endpoint;
@@ -39,6 +51,10 @@ class SSHEngine {
 
     public function to(array $endpoint)
     {
+        if (isset($this->computed)) {
+            throw new Exception('K92/SSHEngine: ssh flow computed', 7);
+        }
+
         $this->curateEndpoint($endpoint);
 
         $this->ssh_flow[] = $endpoint;
