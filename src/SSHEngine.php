@@ -88,7 +88,7 @@ class SSHEngine {
     public function compute()
     {
         if (isset($this->computed)) {
-            return;
+            return $this;
         }
 
         $this->ssh_level = count($this->ssh_flow) - 1;
@@ -131,6 +131,8 @@ class SSHEngine {
         exec($this->ssh_conn.'nohup tail -F /dev/null &');
 
         $this->computed = true;
+
+        return $this;
     }
 
     /**
