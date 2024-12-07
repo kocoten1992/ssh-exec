@@ -195,4 +195,9 @@ class SSHEngine {
     {
         $this->output = [];
     }
+
+    public function __destruct()
+    {
+        exec($this->ssh_conn.$this->css_command);
+    }
 }

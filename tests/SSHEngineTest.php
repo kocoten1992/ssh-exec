@@ -161,6 +161,8 @@ class SSHEngineTest extends TestCase
         $this->assertFileExists($ssh_privatekey_path);
         $this->assertFileExists($ssh_privatekey_path.'.pub');
 
+        unset($se); // mimic __destruct
+
         unlink($ssh_privatekey_path);
         unlink($ssh_privatekey_path.'.pub');
 
