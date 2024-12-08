@@ -198,6 +198,8 @@ class SSHEngine {
 
     public function __destruct()
     {
-        exec($this->ssh_conn.$this->css_command);
+        if (isset($this->ssh_conn) && isset($this->css_command)) {
+            exec($this->ssh_conn.$this->css_command);
+        }
     }
 }
