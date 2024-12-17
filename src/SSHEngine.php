@@ -3,6 +3,7 @@
 namespace K92\SshExec;
 
 use Exception;
+use K92\Phputils\BashCharEscape;
 
 class SSHEngine {
     private array $ssh_flow = [];
@@ -18,6 +19,8 @@ class SSHEngine {
     public readonly string $ssh_level;
 
     public readonly string $css_command; // clear ssh socket command
+
+    public const CMD_SUBSTR_MAX_LEN = 65_535; // max length command is 2**17
 
     public function from(array $endpoint)
     {
@@ -62,7 +65,7 @@ class SSHEngine {
         return $this;
     }
 
-    public function exec(array|string $commands, array $options = [])
+    public function exec(array|string $commands)
     {
         $this->compute();
 
@@ -75,7 +78,31 @@ class SSHEngine {
 
             $this->full_commands[] = $full_command;
 
-            exec($full_command, $this->output, $exit_code);
+            $command_id =  bin2hex(random_bytes(64));
+
+            $i = 0;
+
+            while ($i < strlen($command)) {
+                exec(
+                    $this->ssh_conn.
+                    'echo -n '.
+                    $this->lbsl."'".
+                    BashCharEscape::escape(
+                        substr($command, $i, static::CMD_SUBSTR_MAX_LEN),
+                        $this->lbsl,
+                        $this->hbsl
+                    ).
+                    $this->lbsl."'".' '.
+                    $this->lbsl.">".$this->lbsl.">".' '.
+                    '/dev/shm/'.$command_id
+                );
+
+                $i += static::CMD_SUBSTR_MAX_LEN;
+            }
+
+            exec($this->ssh_conn.'. /dev/shm/'.$command_id, $this->output, $exit_code);
+
+            exec($this->ssh_conn.'rm /dev/shm/'.$command_id);
 
             if ($exit_code !== 0) {
                 throw new Exception('K92/SSHEngine: ssh exec fail', 3);
