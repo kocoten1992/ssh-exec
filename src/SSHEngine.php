@@ -19,6 +19,7 @@ class SSHEngine {
     public readonly string $ssh_level;
 
     public readonly string $css_command; // clear ssh socket command
+    public readonly string $tail_id; // to find and delete tail -F /dev/null
 
     public const CMD_SUBSTR_MAX_LEN = 65_535; // max length command is 2**17
 
@@ -155,7 +156,13 @@ class SSHEngine {
         $this->ssh_conn = $ssh_conn;
 
         // this connection auto removed when object out of scope
-        exec($this->ssh_conn.'nohup tail -F /dev/null &');
+        $this->tail_id =  bin2hex(random_bytes(64));
+
+        exec(
+            $this->ssh_conn.
+            'touch /dev/shm/'.$this->tail_id.' '.$this->lbsl.'&'.$this->lbsl.'& '.
+            'nohup tail -F /dev/null '.$this->tail_id.' &'
+        );
 
         $this->computed = true;
 
@@ -225,8 +232,16 @@ class SSHEngine {
 
     public function __destruct()
     {
-        if (isset($this->ssh_conn) && isset($this->css_command)) {
-            exec($this->ssh_conn.$this->css_command);
+        $command =
+            $this->ssh_conn.
+            'rm /dev/shm/'.$this->tail_id.' '.
+            $this->lbsl.'&'.$this->lbsl.'& '.
+            'pkill -f '.$this->tail_id;
+
+        if (isset($this->css_command)) {
+            $command .= ' && '.$this->css_command;
         }
+
+        exec($command);
     }
 }
