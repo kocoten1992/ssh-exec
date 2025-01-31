@@ -232,6 +232,10 @@ class SSHEngine {
 
     public function __destruct()
     {
+        if (! isset($this->ssh_conn)) {
+            return;
+        }
+
         $command =
             $this->ssh_conn.
             'rm /dev/shm/'.$this->tail_id.' '.
